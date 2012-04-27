@@ -105,13 +105,24 @@ void subBytes(unsigned char block[16]) {
 	}
 }
 
-// shiftRows OK! ~chrgro
+// 
 //__global__
 void shiftRows(unsigned char block[16]) {
-	int* t = (int*) block; // TODO: Bad practice?
-	t[1] = (t[1] << 8) | (t[1] >> (32-8));
-	t[2] = (t[2] << 16) | (t[2] >> (32-16));
-	t[3] = (t[3] << 24) | (t[3] >> (32-24));
+	unsigned char t[16] = {	block[0], block[5], block[10], block[15],
+		block[4], block[9], block[14], block[3],
+		block[8], block[13], block[2], block[7],
+		block[12], block[1], block[6], block[11] };
+		
+	
+	// printf("T:+\n");
+	// for (int i=0; i<16; i++) {
+		// printf("%x,",t[i]);
+	// }
+	// printf("\n");
+	
+	for (int i = 0; i < 16; i++) {
+		block[i] = t[i];
+	}
 }
 
 // Looks good! ~chrgro
@@ -139,32 +150,34 @@ void mixColumns(unsigned char block[16]) {
 	}
 }
 
-void aes128(unsigned char key[16], unsigned char data[16]) {
-	
-	// 1. Key expansion
-	unsigned char expkey[11][16];
-	keySchedule(key, expkey);
-	
+void aes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	// 2. Initial round key
-	addRoundKey(data, expkey, 0);
+	addRoundKey(data, expandedkey, 0);
 	
 	// 3. 9 rounds of encryption
 	for (int i = 1; i < 10; i++) {
 		subBytes(data);
 		shiftRows(data);
 		mixColumns(data);
-		addRoundKey(data, expkey, i);
+		addRoundKey(data, expandedkey, i);
 	}
 	
 	// 4. Final round
 	subBytes(data);
 	shiftRows(data);
-	addRoundKey(data, expkey, 11);
+	addRoundKey(data, expandedkey, 10);
 }
 
-void aes128_core() {
-
+void aes128(unsigned char key[16], unsigned char data[16]) {
+	
+	// 1. Key expansion
+	unsigned char expkey[11][16];
+	keySchedule(key, expkey);
+	
+	aes128_core(expkey, data);
 }
+
+
 
 // Test function for keySchedule.
 // Uses keys and values from the AES spec paper
@@ -186,26 +199,47 @@ void test_keySchedule() {
 	}
 }
 
-int main() {
-	//int p[4] = {0x11223344, 0x11223344, 0x11223344, 0x11223344 };
-	int p[4] = {0x00db0000, 0x00130000, 0x00530000, 0x00450000 };
+void aes_test() {
+	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
+							  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};		
 	
-	/*
-	for (int i=0; i<4; i++) {
-		printf("%x,",p[i]);
+	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
+					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
+	
+	
+	aes128(aeskey, ptxt);
+	
+	for (int i = 0; i < 16; i++) {
+		if (i%4==0) {
+			printf("\nw%i : ",(i)/4);
+		}
+		printf("%02x", ptxt[i]);
+	} 
+	printf("\n");
+}
+
+void shiftRows_test() {
+	unsigned char p[16] = {0x11,0x22,0x33,0x44, 0x1a,0x2a,0x3a,0x4a, 0x1b,0x2b,0x3b,0x4b, 0x1c,0x2c,0x3c,0x4c };
+	
+	printf("Original:\n");
+	for (int i=0; i<16; i++) {
+		printf("%2x,",p[i]);
 	}
 	printf("\n");
-	*/
-
-
 	
-	//shiftRows((char*) p);
+	shiftRows((unsigned char*) p);
 	//mixColumns((char*) p);
 	
-	for (int i=0; i<4; i++) {
+	printf("Shifted:\n");
+	for (int i=0; i<16; i++) {
 		printf("%x,",p[i]);
 	}
 	printf("\n");
+}
+
+int main() {
+	//shiftRows_test();
+	aes_test();
 
 	
 	return 0;
