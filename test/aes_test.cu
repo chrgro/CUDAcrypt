@@ -1,6 +1,12 @@
+#include "../src/aes.h"
+#include "stdio.h"
+#include "../src/timer.h"
 
 
+int main() {
 
+
+}
 
 
 // Test function for keySchedule.
@@ -10,7 +16,7 @@ void test_keySchedule() {
 								  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};						  
 	unsigned char expkey[11][16];
 	
-	keySchedule(aeskey, expkey);
+	//keySchedule(aeskey, expkey);
 	
 	for (int c = 0; c < 11; c++) {
 		for (int i = 0; i < 16; i++) {
@@ -27,8 +33,8 @@ void mixcols_test() {
 	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
 					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
 	
-	mixColumns(ptxt);
-	invMixColumns(ptxt);
+	//mixColumns(ptxt);
+	//invMixColumns(ptxt);
 	
 	printf("Mixed columns:\n");
 	for (int i = 0; i < 16; i++) {
@@ -45,8 +51,8 @@ void subbytes_test() {
 	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
 					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
 	
-	subBytes(ptxt);
-	invSubBytes(ptxt);
+	//subBytes(ptxt);
+	//invSubBytes(ptxt);
 	
 	for (int i = 0; i < 16; i++) {
 		if (i%4==0) {
@@ -73,7 +79,40 @@ void aes_test() {
 	}
 	printf("\n");	
 	
-	aes128(aeskey, ptxt);
+	
+	
+	float time;
+	timerStart();
+	
+	// Set up GPU memory
+	unsigned char *cptxt;
+	unsigned char *caeskey;
+	cudaMalloc ( (void**)&cptxt, 16*sizeof(unsigned char));
+	cudaMalloc ( (void**)&caeskey, 16*sizeof(unsigned char));
+	cudaMemcpy ( cptxt, ptxt, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
+	cudaMemcpy ( caeskey, aeskey, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
+
+	time = timerStop();
+	printf ("Elapsed memory transfer time: %fms\n", time);
+	
+	// Run
+	dim3 dimBlock ( 1, 1 );
+	dim3 dimGrid ( 1, 1 );
+	
+	timerStart();
+	aes128<<<dimGrid, dimBlock>>>(caeskey, cptxt);
+
+	time = timerStop();
+	printf ("Elapsed action time: %fms\n", time);
+
+	// Retrieve data
+	timerStart();
+	cudaMemcpy( ptxt, cptxt, 16*sizeof(unsigned char), cudaMemcpyDeviceToHost );
+	cudaDeviceSynchronize();
+	cudaFree( cptxt );
+
+	time = timerStop();
+	printf ("Elapsed memory writeback time: %fms\n", time);
 	
 	printf("\nCiphertext:");
 	for (int i = 0; i < 16; i++) {
@@ -83,17 +122,7 @@ void aes_test() {
 		printf("%02x", ptxt[i]);
 	} 
 	printf("\n");
-	
-	invaes128(aeskey, ptxt);
-	
-	printf("\nPlaintext decrypted:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
+
 }
 
 void shiftRows_test() {
@@ -105,7 +134,7 @@ void shiftRows_test() {
 	}
 	printf("\n");
 	
-	shiftRows(p);
+	//shiftRows(p);
 	//invShiftRows(p);
 	
 	printf("Shifted:\n");
