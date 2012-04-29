@@ -1,12 +1,9 @@
-#include <stdio.h>
+// AES core components
 
-const int N = 16; 
-const int blocksize = 16; 
-
+#include "aes.h"
 
 // Rijndael S-box
-// Kindly stolen from wikipedia: http://en.wikipedia.org/wiki/Rijndael_S-box
-unsigned char s[256] = 
+__constant__ unsigned char s[256] = 
 {
    0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
    0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -26,7 +23,7 @@ unsigned char s[256] =
    0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
 
-unsigned char inv_s[256] = 
+__constant__ unsigned char inv_s[256] = 
 {
    0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
    0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
@@ -46,7 +43,7 @@ unsigned char inv_s[256] =
    0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
-unsigned char rcon[256] = {
+__constant__ unsigned char rcon[256] = {
 	0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 
 	0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 
 	0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 
@@ -65,7 +62,7 @@ unsigned char rcon[256] = {
 	0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 };
 
-unsigned char mcmult_9[256] = {
+__constant__ unsigned char mcmult_9[256] = {
 	0x00,0x09,0x12,0x1b,0x24,0x2d,0x36,0x3f,0x48,0x41,0x5a,0x53,0x6c,0x65,0x7e,0x77,
 	0x90,0x99,0x82,0x8b,0xb4,0xbd,0xa6,0xaf,0xd8,0xd1,0xca,0xc3,0xfc,0xf5,0xee,0xe7,
 	0x3b,0x32,0x29,0x20,0x1f,0x16,0x0d,0x04,0x73,0x7a,0x61,0x68,0x57,0x5e,0x45,0x4c,
@@ -84,7 +81,7 @@ unsigned char mcmult_9[256] = {
 	0x31,0x38,0x23,0x2a,0x15,0x1c,0x07,0x0e,0x79,0x70,0x6b,0x62,0x5d,0x54,0x4f,0x46
 };
 
-unsigned char mcmult_11[256] = {
+__constant__ unsigned char mcmult_11[256] = {
 	0x00,0x0b,0x16,0x1d,0x2c,0x27,0x3a,0x31,0x58,0x53,0x4e,0x45,0x74,0x7f,0x62,0x69,
 	0xb0,0xbb,0xa6,0xad,0x9c,0x97,0x8a,0x81,0xe8,0xe3,0xfe,0xf5,0xc4,0xcf,0xd2,0xd9,
 	0x7b,0x70,0x6d,0x66,0x57,0x5c,0x41,0x4a,0x23,0x28,0x35,0x3e,0x0f,0x04,0x19,0x12,
@@ -103,7 +100,7 @@ unsigned char mcmult_11[256] = {
 	0xca,0xc1,0xdc,0xd7,0xe6,0xed,0xf0,0xfb,0x92,0x99,0x84,0x8f,0xbe,0xb5,0xa8,0xa3
 };
 
-unsigned char mcmult_13[256] = {
+__constant__ unsigned char mcmult_13[256] = {
 	0x00,0x0d,0x1a,0x17,0x34,0x39,0x2e,0x23,0x68,0x65,0x72,0x7f,0x5c,0x51,0x46,0x4b,
 	0xd0,0xdd,0xca,0xc7,0xe4,0xe9,0xfe,0xf3,0xb8,0xb5,0xa2,0xaf,0x8c,0x81,0x96,0x9b,
 	0xbb,0xb6,0xa1,0xac,0x8f,0x82,0x95,0x98,0xd3,0xde,0xc9,0xc4,0xe7,0xea,0xfd,0xf0,
@@ -122,7 +119,7 @@ unsigned char mcmult_13[256] = {
 	0xdc,0xd1,0xc6,0xcb,0xe8,0xe5,0xf2,0xff,0xb4,0xb9,0xae,0xa3,0x80,0x8d,0x9a,0x97
 };
 
-unsigned char mcmult_14[256] = {
+__constant__ unsigned char mcmult_14[256] = {
 	0x00,0x0e,0x1c,0x12,0x38,0x36,0x24,0x2a,0x70,0x7e,0x6c,0x62,0x48,0x46,0x54,0x5a,
 	0xe0,0xee,0xfc,0xf2,0xd8,0xd6,0xc4,0xca,0x90,0x9e,0x8c,0x82,0xa8,0xa6,0xb4,0xba,
 	0xdb,0xd5,0xc7,0xc9,0xe3,0xed,0xff,0xf1,0xab,0xa5,0xb7,0xb9,0x93,0x9d,0x8f,0x81,
@@ -144,7 +141,7 @@ unsigned char mcmult_14[256] = {
 
 
 
-//__global__
+__device__
 void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
 	
 	
@@ -184,30 +181,30 @@ void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
 }
 
 
-//__global__
+__device__
 void addRoundKey(unsigned char block[16], unsigned char key[11][16], int round) {	
 
 	for (int i = 0; i < 16; i++) {
-		block[i] = block[i] ^ key[round][i];
+		block[i] ^= key[round][i];
 	}
 	
 }
 
-//__global__
+__device__
 void subBytes(unsigned char block[16]) {
 	for (int f = 0; f < 16; f++) {
 		block[f] = s[block[f]];
 	}
 }
 
+__device__
 void invSubBytes(unsigned char block[16]) {
 	for (int f = 0; f < 16; f++) {
 		block[f] = inv_s[block[f]];
 	}
 }
 
-// 
-//__global__
+__device__
 void shiftRows(unsigned char block[16]) {
 	unsigned char t[16] = {	block[0], block[5], block[10], block[15],
 		block[4], block[9], block[14], block[3],
@@ -219,6 +216,7 @@ void shiftRows(unsigned char block[16]) {
 	}
 }
 
+__device__
 void invShiftRows(unsigned char block[16]) {
 	unsigned char t[16] = {	block[0], block[13], block[10], block[7],
 		block[4], block[1], block[14], block[11],
@@ -230,7 +228,7 @@ void invShiftRows(unsigned char block[16]) {
 	}
 }
 
-//__global__
+__device__
 void mixColumns(unsigned char block[16]) {
 	
 	for (int uc = 0; uc < 16; uc = uc + 4) {
@@ -242,7 +240,7 @@ void mixColumns(unsigned char block[16]) {
 		unsigned char h;
 		for(int c = 0; c < 4;c++) {
 				a[c] = r[c];
-				h = (unsigned char)((signed char)r[c] >> 7);
+				h = (unsigned char)((signed char)r[c] >> 7); //??? r[c] > 0xF : 1 ? 0
 				b[c] = r[c] << 1; 
 				b[c] ^= 0x1B & h;
 		}
@@ -254,6 +252,7 @@ void mixColumns(unsigned char block[16]) {
 	}
 }
 
+__device__
 void invMixColumns(unsigned char block[16]) {
 	for (int uc = 0; uc < 16; uc = uc + 4) {
 		unsigned char r[4] = {block[uc], block[uc+1], block[uc+2], block[uc+3]};
@@ -265,6 +264,7 @@ void invMixColumns(unsigned char block[16]) {
 	}
 }
 
+__device__
 void aes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	// 2. Initial round key
 	addRoundKey(data, expandedkey, 0);
@@ -283,6 +283,7 @@ void aes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	addRoundKey(data, expandedkey, 10);
 }
 
+__global__
 void aes128(unsigned char key[16], unsigned char data[16]) {
 	
 	// 1. Key expansion
@@ -292,6 +293,7 @@ void aes128(unsigned char key[16], unsigned char data[16]) {
 	aes128_core(expkey, data);
 }
 
+__device__
 void invaes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	// 2. Initial round key
 	addRoundKey(data, expandedkey, 10);
@@ -311,6 +313,7 @@ void invaes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	addRoundKey(data, expandedkey, 0);
 }
 
+__global__
 void invaes128(unsigned char key[16], unsigned char data[16]) {
 		// 1. Key expansion
 	unsigned char expkey[11][16];
@@ -322,208 +325,3 @@ void invaes128(unsigned char key[16], unsigned char data[16]) {
 
 
 
-// Test function for keySchedule.
-// Uses keys and values from the AES spec paper
-void test_keySchedule() {
-	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
-								  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};						  
-	unsigned char expkey[11][16];
-	
-	keySchedule(aeskey, expkey);
-	
-	for (int c = 0; c < 11; c++) {
-		for (int i = 0; i < 16; i++) {
-			if (i%4==0) {
-				printf("\nw%i : ",(c*16+i)/4);
-			}
-			printf("%x", expkey[c][i]);
-		}
-		printf("\n");
-	}
-}
-
-void mixcols_test() {
-	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
-					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
-	
-	mixColumns(ptxt);
-	invMixColumns(ptxt);
-	
-	printf("Mixed columns:\n");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
-
-}
-
-void subbytes_test() {
-	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
-					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
-	
-	subBytes(ptxt);
-	invSubBytes(ptxt);
-	
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
-}
-
-void aes_test() {
-	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
-							  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};		
-	
-	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
-					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
-
-	printf("\nPlaintext:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	}
-	printf("\n");	
-	
-	aes128(aeskey, ptxt);
-	
-	printf("\nCiphertext:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
-	
-	invaes128(aeskey, ptxt);
-	
-	printf("\nPlaintext decrypted:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
-}
-
-void shiftRows_test() {
-	unsigned char p[16] = {0x11,0x22,0x33,0x44, 0x1a,0x2a,0x3a,0x4a, 0x1b,0x2b,0x3b,0x4b, 0x1c,0x2c,0x3c,0x4c };
-	
-	printf("Original:\n");
-	for (int i=0; i<16; i++) {
-		printf("%2x,",p[i]);
-	}
-	printf("\n");
-	
-	shiftRows(p);
-	//invShiftRows(p);
-	
-	printf("Shifted:\n");
-	for (int i=0; i<16; i++) {
-		printf("%x,",p[i]);
-	}
-	printf("\n");
-}
-
-int main() {
-	//mixcols_test();
-	//subbytes_test();
-	//shiftRows_test();
-	aes_test();
-
-	
-	return 0;
-}
-
-
-
-// DONT TOUCH!
-int main_t() {
-		int vals[N] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-		int key = -1;
-		
-		for (int i=0; i<N; i++) {
-			printf("%x,",vals[i]);
-		}
-		printf("\n");
-		
-		// Timer initiate
-		cudaEvent_t start, stop; 
-		float time; 
-		cudaEventCreate(&start); 
-		cudaEventCreate(&stop); 
-		cudaEventRecord( start, 0 ); 
-		
-		
-		// Set up GPU memory
-		int *cvals;
-		int *ckey;
-		cudaMalloc ( (void**)&cvals, N*sizeof(int));
-		cudaMalloc ( (void**)&ckey, sizeof(int));
-		cudaMemcpy ( cvals, vals, N*sizeof(int), cudaMemcpyHostToDevice );
-		cudaMemcpy ( ckey, &key, sizeof(int), cudaMemcpyHostToDevice );
-		
-		// Timer stop, reinitialize
-		cudaEventRecord( stop, 0 ); 
-		cudaEventSynchronize( stop ); 
-		cudaEventElapsedTime( &time, start, stop ); 
-		cudaEventDestroy( start ); 
-		cudaEventDestroy( stop );
-		cudaEventCreate(&start); 
-		cudaEventCreate(&stop); 
-		cudaEventRecord( start, 0 ); 
-		
-		// Output
-		printf ("Elapsed memory transfer time: %fms\n", time);
-		
-		// Run OTP
-		dim3 dimBlock ( blocksize, 1 );
-		dim3 dimGrid ( 1, 1 );
-		
-		
-		//otp<<<dimGrid, dimBlock>>>(cvals, ckey);
-		
-		// Timer stop, reinitialize
-		cudaEventRecord( stop, 0 ); 
-		cudaEventSynchronize( stop ); 
-		cudaEventElapsedTime( &time, start, stop ); 
-		cudaEventDestroy( start ); 
-		cudaEventDestroy( stop );
-		cudaEventCreate(&start); 
-		cudaEventCreate(&stop); 
-		cudaEventRecord( start, 0 ); 
-		
-		// Output
-		printf ("Elapsed OTP action time: %fms\n", time);
-		
-		// Retrieve data
-		cudaMemcpy( vals, cvals, N*sizeof(int), cudaMemcpyDeviceToHost );
-		cudaDeviceSynchronize();
-		cudaFree( cvals );
-		
-		// Timer stop
-		cudaEventRecord( stop, 0 ); 
-		cudaEventSynchronize( stop ); 
-		cudaEventElapsedTime( &time, start, stop ); 
-		cudaEventDestroy( start ); 
-		cudaEventDestroy( stop );
-		
-		// Output
-		printf ("Elapsed memory writeback time: %fms\n", time);
-		for (int i=0; i<N; i++) {
-			printf("%x,",vals[i]);
-		}
-		printf("\n");
-
-		
-		return 0;
-}
