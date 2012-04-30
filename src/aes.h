@@ -6,8 +6,6 @@
 // AES core components
 
 
-
-__device__
 void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]);
 
 __device__
@@ -31,16 +29,14 @@ void mixColumns(unsigned char block[16]);
 __device__
 void invMixColumns(unsigned char block[16]);
 
-__device__
-void aes128_core(unsigned char expandedkey[11][16], unsigned char data[16]);
-
 __global__
+void aes128_core(unsigned char expandedkey[11][16], unsigned char *data);
+
 void aes128(unsigned char key[16], unsigned char data[16]);
 
-__device__
-void invaes128_core(unsigned char expandedkey[11][16], unsigned char data[16]);
-
 __global__
+void invaes128_core(unsigned char expandedkey[11][16], unsigned char *data);
+
 void invaes128(unsigned char key[16], unsigned char data[16]);
 
 

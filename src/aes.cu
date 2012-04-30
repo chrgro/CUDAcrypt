@@ -138,10 +138,6 @@ __constant__ unsigned char mcmult_14[256] = {
 	0xd7,0xd9,0xcb,0xc5,0xef,0xe1,0xf3,0xfd,0xa7,0xa9,0xbb,0xb5,0x9f,0x91,0x83,0x8d
 };
 
-
-
-
-__device__
 void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
 	
 	
@@ -174,10 +170,6 @@ void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
 			expandedkey[i][c] = expandedkey[i-1][c] ^ expandedkey[i][c-4]; 
 		}
 	}
-	
-	
-	
-
 }
 
 
@@ -264,62 +256,78 @@ void invMixColumns(unsigned char block[16]) {
 	}
 }
 
-__device__
-void aes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
+__global__
+void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
+	int dataptr = blockIdx.x * blockDim.x + threadIdx.x;
+	
+	unsigned char localdata[16];
+	for (int i = 0; i < 16; i++) {
+		localdata[i] = data[dataptr+i];
+	}
+	
 	// 2. Initial round key
-	addRoundKey(data, expandedkey, 0);
+	addRoundKey(localdata, expandedkey, 0);
 	
 	// 3. 9 rounds of encryption
 	for (int i = 1; i < 10; i++) {
-		subBytes(data);
-		shiftRows(data);
-		mixColumns(data);
-		addRoundKey(data, expandedkey, i);
+		subBytes(localdata);
+		shiftRows(localdata);
+		mixColumns(localdata);
+		addRoundKey(localdata, expandedkey, i);
 	}
 	
 	// 4. Final round
-	subBytes(data);
-	shiftRows(data);
-	addRoundKey(data, expandedkey, 10);
+	subBytes(localdata);
+	shiftRows(localdata);
+	addRoundKey(localdata, expandedkey, 10);
+	
+	for (int i = 0; i < 16; i++) {
+		data[dataptr+i] = localdata[i];
+	}
+}
+
+void aes128(unsigned char key[16], unsigned char *data[16]) {
+	
+	// 1. Key expansion
+	//unsigned char expkey[11][16];
+	//keySchedule(key, expkey);
+	
+	//aes128_core(expkey, data[threadIdx.x]);
 }
 
 __global__
-void aes128(unsigned char key[16], unsigned char data[16]) {
+void invaes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
+	int dataptr = blockIdx.x * blockDim.x + threadIdx.x;
 	
-	// 1. Key expansion
-	unsigned char expkey[11][16];
-	keySchedule(key, expkey);
+	unsigned char localdata[16];
+	for (int i = 0; i < 16; i++) {
+		localdata[i] = data[dataptr+i];
+	}
 	
-	aes128_core(expkey, data);
-}
-
-__device__
-void invaes128_core(unsigned char expandedkey[11][16], unsigned char data[16]) {
 	// 2. Initial round key
-	addRoundKey(data, expandedkey, 10);
+	addRoundKey(localdata, expandedkey, 10);
 	
 	// 3. 9 rounds of decryption
 	for (int i = 9; i > 0; i--) {
-		invShiftRows(data);
-		invSubBytes(data);
-		addRoundKey(data, expandedkey, i);
-		invMixColumns(data);
+		invShiftRows(localdata);
+		invSubBytes(localdata);
+		addRoundKey(localdata, expandedkey, i);
+		invMixColumns(localdata);
 	}
 	
 	// 4. Final round
-	invShiftRows(data);
-	invSubBytes(data);
+	invShiftRows(localdata);
+	invSubBytes(localdata);
 	
-	addRoundKey(data, expandedkey, 0);
+	addRoundKey(localdata, expandedkey, 0);
 }
 
-__global__
 void invaes128(unsigned char key[16], unsigned char data[16]) {
 		// 1. Key expansion
-	unsigned char expkey[11][16];
-	keySchedule(key, expkey);
+	//unsigned char expkey[11][16];
+	//keySchedule(key, expkey);
 	
-	invaes128_core(expkey, data);
+	//invaes128_core(expkey, data);
 
 }
 
