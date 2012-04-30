@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
 	for (int i=numbytes-16; i<numbytes; i++) {
 		data[i] = 0; // Clear the last 16 bytes
 	}
-	fread( data, 1, numbytes, fp);
+	fread( data, 1, numbytes, fp); 
 	
 	
 
