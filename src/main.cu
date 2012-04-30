@@ -5,7 +5,7 @@
 
 __device__ unsigned char cexpkey[11][16];
 
-int main(int argc, char *argv[]) {
+int main_t(int argc, char *argv[]) {
 
 	const char *filename = "FIPS-197.pdf";
 	
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 }
 
 
-void single_aes_example() {
+int main() {
 
 	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
 							  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};		
@@ -108,23 +108,28 @@ void single_aes_example() {
 	float time;
 	timerStart();
 	
+	unsigned char expkey[11][16];
+	keySchedule(aeskey, expkey);
+	
 	// Set up GPU memory
 	unsigned char *cptxt;
-	unsigned char *caeskey;
+	unsigned char cexpkey[11][16];
 	cudaMalloc ( (void**)&cptxt, 16*sizeof(unsigned char));
-	cudaMalloc ( (void**)&caeskey, 16*sizeof(unsigned char));
+	cudaMalloc ( (void**)&cexpkey, 11*16*sizeof(unsigned char));
 	cudaMemcpy ( cptxt, ptxt, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
-	cudaMemcpy ( caeskey, aeskey, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
+	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
 
 	time = timerStop();
 	printf ("Elapsed memory transfer time: %fms\n", time);
 	
+	
+	
 	// Run
-	dim3 dimBlock ( 1, 1 );
-	dim3 dimGrid ( 1, 1 );
+	// dim3 dimBlock ( 1 );
+	// dim3 dimGrid ( 1 );
 	
 	timerStart();
-	//aes128<<<dimGrid, dimBlock>>>(caeskey, cptxt);
+	aes128_core<<<1, 1>>>(cexpkey, cptxt);
 
 	time = timerStop();
 	printf ("Elapsed action time: %fms\n", time);
@@ -146,4 +151,6 @@ void single_aes_example() {
 		printf("%02x", ptxt[i]);
 	} 
 	printf("\n");
+	
+	return 0;
 }

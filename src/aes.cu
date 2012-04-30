@@ -258,11 +258,11 @@ void invMixColumns(unsigned char block[16]) {
 
 __global__
 void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
-	int dataptr = blockIdx.x * blockDim.x + threadIdx.x;
+	//int dataptr = (blockIdx.x * blockDim.x + threadIdx.x)*16;
 	
 	unsigned char localdata[16];
 	for (int i = 0; i < 16; i++) {
-		localdata[i] = data[dataptr+i];
+		localdata[i] = data[0+i];
 	}
 	
 	// 2. Initial round key
@@ -282,7 +282,7 @@ void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
 	addRoundKey(localdata, expandedkey, 10);
 	
 	for (int i = 0; i < 16; i++) {
-		data[dataptr+i] = localdata[i];
+		data[0+i] = localdata[i];
 	}
 }
 
