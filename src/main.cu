@@ -7,35 +7,48 @@ __device__ unsigned char cexpkey[11][16];
 
 int main_t(int argc, char *argv[]) {
 
-	const char *filename = "FIPS-197.pdf";
-	
-	// Open file in binary mode, find size
-	FILE *fp = fopen(filename, "rb");
-	
-	
-	
+	/*Added by Richard for input output*/
+	FILE* in_file, out_file;
+	int in_index, out_index; //the argument index corresponding to in/out
+	const char* in_str = "-i";
+	const char* out_str = "-c";
+	for(int i = 0; i < argc; i++)
+	{
+		if(strcmp(argv[i], in_str) == 0)
+		{
+			in_index = i + 1;
+			break;
+		}
+	}
+
+	for(int i = 0; i < argc; i++)
+	{
+		if(strcmp(argv[i], out_str) == 0)
+		{
+			out_index = i + 1;
+			break;
+		}
+	}
+
+	in_file = fopen(argv[in_index], "rb");
+	out_file = fopen(argv[out_index], "wb");	
+
 	unsigned char *data;
 	int datasize;
-	
-	
-	fseek(fp, 0L, SEEK_END);
-	datasize = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-	int numbytes = ((datasize/128)+1)*128;
-	data = (unsigned char*) malloc(numbytes*sizeof(unsigned char));
-	for (int i=numbytes-16; i<numbytes; i++) {
-		data[i] = 0; // Clear the last 16 bytes
-	}
-	fread( data, 1, numbytes, fp); 
-	
-	
+	int pad;
 
-	printf("Datasize: %i, nearest bytes mod 128==0: %i\n", datasize, numbytes);
-	printf("Number of blocks to be encrypted: %i\n", numbytes/128);
-	
-	
-	
-	
+	fseek(in_file, 0L, SEEK_END);
+	datasize = ftell(in_file);
+	fseek(in_file, 0L, SEEK_SET);
+	if(datasize%128) //not divisible by 128
+		pad = 1;
+	else//datasize is divisible by 128
+		pad = 0;
+	int numbytes = ((datasize/128) + pad) * 128;
+	data = (unsigned char*)malloc(numbytes * sizeof(unsigned char));
+	fread(data, 1, numbytes, in_file);
+
+
 	unsigned char expkey[11][16];
 	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
 						  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};
@@ -48,9 +61,8 @@ int main_t(int argc, char *argv[]) {
 	
 	// Set up GPU memory
 	unsigned char *cdata;
-	//unsigned char *ckey;
+	unsigned char cexpkey[11][16];
 	cudaMalloc ( (void**)&cdata, numbytes*sizeof(unsigned char));
-	//cudaMalloc ( (void**)&ckey, 16*sizeof(unsigned char));
 	cudaMemcpy ( cdata, data, numbytes*sizeof(unsigned char), cudaMemcpyHostToDevice );
 	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
 
@@ -70,9 +82,8 @@ int main_t(int argc, char *argv[]) {
 	timerStart();
 	unsigned char* newdata = (unsigned char*)malloc(numbytes*sizeof(unsigned char));
 	cudaMemcpy ( newdata, cdata, numbytes*sizeof(unsigned char), cudaMemcpyDeviceToHost );
-	FILE *pFile = fopen ( "encrFIPS-197.pdf" , "wb" );
-	fwrite (newdata , 1 , datasize*sizeof(unsigned char) , pFile );
-	fclose (pFile);
+	fwrite (newdata , 1 , datasize*sizeof(unsigned char) , out_file);
+	fclose (out_file);
 	time = timerStop();
 	printf("Copy from device and to file: %fms\n", time);
 	
