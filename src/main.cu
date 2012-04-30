@@ -8,7 +8,7 @@ __device__ unsigned char cexpkey[11][16];
 int main_t(int argc, char *argv[]) {
 
 	/*Added by Richard for input output*/
-	FILE* in_file, out_file;
+	FILE *in_file, *out_file;
 	int in_index, out_index; //the argument index corresponding to in/out
 	const char* in_str = "-i";
 	const char* out_str = "-c";
@@ -47,6 +47,7 @@ int main_t(int argc, char *argv[]) {
 	int numbytes = ((datasize/128) + pad) * 128;
 	data = (unsigned char*)malloc(numbytes * sizeof(unsigned char));
 	fread(data, 1, numbytes, in_file);
+	fclose(in_file);
 
 
 	unsigned char expkey[11][16];
@@ -88,7 +89,6 @@ int main_t(int argc, char *argv[]) {
 	printf("Copy from device and to file: %fms\n", time);
 	
 	timerStart();
-	fclose(fp);
 	free(data);
 	time = timerStop();
 	printf("Closing operations time: %f\n", time);
