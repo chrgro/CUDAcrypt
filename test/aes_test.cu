@@ -3,11 +3,6 @@
 #include "../src/timer.h"
 
 
-int main() {
-
-
-}
-
 
 // Test function for keySchedule.
 // Uses keys and values from the AES spec paper
@@ -16,7 +11,7 @@ void test_keySchedule() {
 								  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};						  
 	unsigned char expkey[11][16];
 	
-	//keySchedule(aeskey, expkey);
+	keySchedule(aeskey, expkey);
 	
 	for (int c = 0; c < 11; c++) {
 		for (int i = 0; i < 16; i++) {
@@ -100,7 +95,7 @@ void aes_test() {
 	dim3 dimGrid ( 1, 1 );
 	
 	timerStart();
-	aes128<<<dimGrid, dimBlock>>>(caeskey, cptxt);
+	//aes128<<<dimGrid, dimBlock>>>(caeskey, cptxt);
 
 	time = timerStop();
 	printf ("Elapsed action time: %fms\n", time);
@@ -142,4 +137,10 @@ void shiftRows_test() {
 		printf("%x,",p[i]);
 	}
 	printf("\n");
+}
+
+
+int main() {
+
+	test_keySchedule();
 }

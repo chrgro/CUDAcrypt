@@ -5,14 +5,15 @@
 
 __device__ unsigned char cexpkey[11][16];
 
-int main_t(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
 	/*Added by Richard for input output*/
 	FILE *in_file, *out_file;
-	int in_index, out_index; //the argument index corresponding to in/out
+	int in_index = 0, out_index = 0; //the argument index corresponding to in/out
 	const char* in_str = "-i";
-	const char* out_str = "-c";
-	for(int i = 0; i < argc; i++)
+	const char* out_str = "-o";
+	
+	for(int i = 0; i < argc-1; i++)
 	{
 		if(strcmp(argv[i], in_str) == 0)
 		{
@@ -21,7 +22,7 @@ int main_t(int argc, char *argv[]) {
 		}
 	}
 
-	for(int i = 0; i < argc; i++)
+	for(int i = 0; i < argc-1; i++)
 	{
 		if(strcmp(argv[i], out_str) == 0)
 		{
@@ -29,14 +30,25 @@ int main_t(int argc, char *argv[]) {
 			break;
 		}
 	}
-
+	
+	if (in_index == 0 || out_index == 0) {
+		printf("Incorrect input parameters!\nUsage: bin/cudacrypt -i <INPUTFILE> -o <OUTPUTFILE>\n");
+		exit(-1);
+	}
+	printf("%i\n", out_index);
+	
 	in_file = fopen(argv[in_index], "rb");
 	out_file = fopen(argv[out_index], "wb");	
+	printf("Before segfault \n");
+	
+	
 
 	unsigned char *data;
 	int datasize;
 	int pad;
 
+	
+	
 	fseek(in_file, 0L, SEEK_END);
 	datasize = ftell(in_file);
 	fseek(in_file, 0L, SEEK_SET);
@@ -80,6 +92,9 @@ int main_t(int argc, char *argv[]) {
 	time = timerStop();
 	printf("Encryption time: %fms \n", time);
 	
+	int err = cudaPeekAtLastError();
+	printf("Error code: %i\n", err);
+	
 	timerStart();
 	unsigned char* newdata = (unsigned char*)malloc(numbytes*sizeof(unsigned char));
 	cudaMemcpy ( newdata, cdata, numbytes*sizeof(unsigned char), cudaMemcpyDeviceToHost );
@@ -97,7 +112,9 @@ int main_t(int argc, char *argv[]) {
 }
 
 
-int main() {
+int main_t() {
+	// Clear old error messages
+	cudaGetLastError();
 
 	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
 							  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};		
@@ -124,24 +141,25 @@ int main() {
 	
 	// Set up GPU memory
 	unsigned char *cptxt;
-	unsigned char cexpkey[11][16];
-	cudaMalloc ( (void**)&cptxt, 16*sizeof(unsigned char));
-	cudaMalloc ( (void**)&cexpkey, 11*16*sizeof(unsigned char));
+	unsigned char *cexpkey;
+	cudaMalloc ( &cptxt, 16*sizeof(unsigned char));
+	cudaMalloc ( &cexpkey, 11*16*sizeof(unsigned char));
 	cudaMemcpy ( cptxt, ptxt, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
 	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
 
 	time = timerStop();
 	printf ("Elapsed memory transfer time: %fms\n", time);
 	
-	
-	
 	// Run
 	// dim3 dimBlock ( 1 );
 	// dim3 dimGrid ( 1 );
 	
 	timerStart();
-	aes128_core<<<1, 1>>>(cexpkey, cptxt);
+	aes128_core<<<1, 1>>>((unsigned char(*)[16])cexpkey, cptxt);
 
+	int err = cudaPeekAtLastError();
+	printf("Error code: %i\n", err);
+	
 	time = timerStop();
 	printf ("Elapsed action time: %fms\n", time);
 
