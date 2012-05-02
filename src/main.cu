@@ -94,12 +94,18 @@ int main(int argc, char *argv[]) {
 	printf ("Elapsed memory transfer time: %fms\n", time);
 	
 	// Run
-	dim3 dimGrid ( (numbytes/128)/256 );
+	dim3 dimGrid ( (numbytes/16)/256 );
 	dim3 dimBlock ( 256 );
-	
 	
 	timerStart();
 	aes128_core<<<dimGrid, dimBlock>>>((unsigned char(*)[16])cexpkey, cdata);
+	dim3 dimBlock_remaining ( (numbytes/16)%256 );
+	//printf("Numbytes: %i, mod 256: %i\n", numbytes, (numbytes/16)%256);
+	printf("Data address offset: %x\n", numbytes - ((numbytes/16)%256)*16);
+	if (dimBlock_remaining.x != 0) {
+		aes128_core<<<1, dimBlock_remaining>>>((unsigned char(*)[16])cexpkey, cdata+( numbytes - ((numbytes/16)%256)*16));
+	}
+	
 	time = timerStop();
 	printf("Encryption time: %fms \n", time);
 	
