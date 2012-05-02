@@ -6,6 +6,8 @@
 __device__ unsigned char cexpkey[11][16];
 
 int main(int argc, char *argv[]) {
+	// Clear old error messages
+	cudaGetLastError();
 
 	/*Added by Richard for input output*/
 	FILE *in_file, *out_file;
@@ -35,18 +37,22 @@ int main(int argc, char *argv[]) {
 		printf("Incorrect input parameters!\nUsage: bin/cudacrypt -i <INPUTFILE> -o <OUTPUTFILE>\n");
 		exit(-1);
 	}
-	printf("%i\n", out_index);
 	
 	in_file = fopen(argv[in_index], "rb");
+	if (in_file == false) {
+		printf("Error: Input file cannot be opened (check path)\n");
+		exit(-1);
+	}
+	
 	out_file = fopen(argv[out_index], "wb");	
-	printf("Before segfault \n");
+	if (out_file == false) {
+		printf("Error: Output file cannot be created \n");
+		exit(-1);
+	}
 	
-	
-
 	unsigned char *data;
 	int datasize;
 	int pad;
-
 	
 	
 	fseek(in_file, 0L, SEEK_END);
@@ -72,12 +78,17 @@ int main(int argc, char *argv[]) {
 	float time;
 	timerStart();
 	
+
+	
 	// Set up GPU memory
 	unsigned char *cdata;
-	unsigned char cexpkey[11][16];
-	cudaMalloc ( (void**)&cdata, numbytes*sizeof(unsigned char));
+	unsigned char *cexpkey;
+	cudaMalloc ( &cdata, numbytes*sizeof(unsigned char));
+	cudaMalloc ( &cexpkey, 11*16*sizeof(unsigned char));
 	cudaMemcpy ( cdata, data, numbytes*sizeof(unsigned char), cudaMemcpyHostToDevice );
 	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
+	
+	
 
 	time = timerStop();
 	printf ("Elapsed memory transfer time: %fms\n", time);
@@ -88,98 +99,31 @@ int main(int argc, char *argv[]) {
 	
 	
 	timerStart();
-	aes128_core<<<dimGrid, dimBlock>>>(cexpkey, cdata);
+	aes128_core<<<dimGrid, dimBlock>>>((unsigned char(*)[16])cexpkey, cdata);
 	time = timerStop();
 	printf("Encryption time: %fms \n", time);
 	
-	int err = cudaPeekAtLastError();
-	printf("Error code: %i\n", err);
+	
 	
 	timerStart();
 	unsigned char* newdata = (unsigned char*)malloc(numbytes*sizeof(unsigned char));
 	cudaMemcpy ( newdata, cdata, numbytes*sizeof(unsigned char), cudaMemcpyDeviceToHost );
+	time = timerStop();
+	printf("Copy from device: %fms\n", time);
+	
+	
+	timerStart();
 	fwrite (newdata , 1 , datasize*sizeof(unsigned char) , out_file);
 	fclose (out_file);
-	time = timerStop();
-	printf("Copy from device and to file: %fms\n", time);
-	
-	timerStart();
+
 	free(data);
 	time = timerStop();
-	printf("Closing operations time: %f\n", time);
+	printf("Write to file and closing operations time: %f\n", time);
 	
-	return 0;
-}
-
-
-int main_t() {
-	// Clear old error messages
-	cudaGetLastError();
-
-	unsigned char aeskey[16] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
-							  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};		
-	
-	unsigned char ptxt[16] = {0x32 ,0x43 ,0xf6 ,0xa8 ,0x88 ,0x5a ,0x30 , 0x8d,
-					0x31 ,0x31 ,0x98 ,0xa2 ,0xe0 ,0x37 ,0x07 ,0x34};
-
-	printf("\nPlaintext:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	}
-	printf("\n");	
-	
-	
-	
-	float time;
-	timerStart();
-	
-	unsigned char expkey[11][16];
-	keySchedule(aeskey, expkey);
-	
-	// Set up GPU memory
-	unsigned char *cptxt;
-	unsigned char *cexpkey;
-	cudaMalloc ( &cptxt, 16*sizeof(unsigned char));
-	cudaMalloc ( &cexpkey, 11*16*sizeof(unsigned char));
-	cudaMemcpy ( cptxt, ptxt, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
-	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
-
-	time = timerStop();
-	printf ("Elapsed memory transfer time: %fms\n", time);
-	
-	// Run
-	// dim3 dimBlock ( 1 );
-	// dim3 dimGrid ( 1 );
-	
-	timerStart();
-	aes128_core<<<1, 1>>>((unsigned char(*)[16])cexpkey, cptxt);
-
 	int err = cudaPeekAtLastError();
-	printf("Error code: %i\n", err);
-	
-	time = timerStop();
-	printf ("Elapsed action time: %fms\n", time);
-
-	// Retrieve data
-	timerStart();
-	cudaMemcpy( ptxt, cptxt, 16*sizeof(unsigned char), cudaMemcpyDeviceToHost );
-	cudaDeviceSynchronize();
-	cudaFree( cptxt );
-
-	time = timerStop();
-	printf ("Elapsed memory writeback time: %fms\n", time);
-	
-	printf("\nCiphertext:");
-	for (int i = 0; i < 16; i++) {
-		if (i%4==0) {
-			printf("\nw%i : ",(i)/4);
-		}
-		printf("%02x", ptxt[i]);
-	} 
-	printf("\n");
+	if (err != 0) {
+		printf("Some error occured with the CUDA device! Error code: %i\n", err);
+	}
 	
 	return 0;
 }
