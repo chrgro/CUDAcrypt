@@ -316,7 +316,7 @@ void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
 		mixColumns(localdata);
 		addRoundKey(localdata, expandedkey, i);
 	}
-	
+	 
 	// 4. Final round
 	subBytes(localdata);
 	shiftRows(localdata);
