@@ -226,11 +226,6 @@ void addRoundKey(aesword_t block[4], aesword_t key[11][4], int round) {
 	for (int i = 0; i < 4; i++) {
 		block[i].w ^= key[round][i].w;
 	}
-	
-	// for (int i = 0; i < 16; i++) {
-		// block[i] ^= key[round][i];
-	// }
-	
 }
 
 __device__
