@@ -4,7 +4,8 @@
 #include "stdio.h"
 
 // Rijndael S-box
-__constant__ unsigned char s[256] = 
+__constant__ 
+unsigned char s[256] = 
 {
    0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76,
    0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0,
@@ -44,7 +45,8 @@ unsigned char s_host[256] =
    0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16
 };
 
-__constant__ unsigned char inv_s[256] = 
+__constant__ 
+unsigned char inv_s[256] = 
 {
    0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB,
    0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB,
@@ -64,7 +66,8 @@ __constant__ unsigned char inv_s[256] =
    0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D
 };
 
-__constant__ unsigned char rcon[256] = {
+__constant__ 
+unsigned char rcon[256] = {
 	0x8d, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a, 
 	0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91, 0x39, 
 	0x72, 0xe4, 0xd3, 0xbd, 0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 
@@ -102,7 +105,8 @@ unsigned char rcon_host[256] = {
 	0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 };
 
-__constant__ unsigned char mcmult_9[256] = {
+__constant__ 
+unsigned char mcmult_9[256] = {
 	0x00,0x09,0x12,0x1b,0x24,0x2d,0x36,0x3f,0x48,0x41,0x5a,0x53,0x6c,0x65,0x7e,0x77,
 	0x90,0x99,0x82,0x8b,0xb4,0xbd,0xa6,0xaf,0xd8,0xd1,0xca,0xc3,0xfc,0xf5,0xee,0xe7,
 	0x3b,0x32,0x29,0x20,0x1f,0x16,0x0d,0x04,0x73,0x7a,0x61,0x68,0x57,0x5e,0x45,0x4c,
@@ -121,7 +125,8 @@ __constant__ unsigned char mcmult_9[256] = {
 	0x31,0x38,0x23,0x2a,0x15,0x1c,0x07,0x0e,0x79,0x70,0x6b,0x62,0x5d,0x54,0x4f,0x46
 };
 
-__constant__ unsigned char mcmult_11[256] = {
+__constant__ 
+unsigned char mcmult_11[256] = {
 	0x00,0x0b,0x16,0x1d,0x2c,0x27,0x3a,0x31,0x58,0x53,0x4e,0x45,0x74,0x7f,0x62,0x69,
 	0xb0,0xbb,0xa6,0xad,0x9c,0x97,0x8a,0x81,0xe8,0xe3,0xfe,0xf5,0xc4,0xcf,0xd2,0xd9,
 	0x7b,0x70,0x6d,0x66,0x57,0x5c,0x41,0x4a,0x23,0x28,0x35,0x3e,0x0f,0x04,0x19,0x12,
@@ -140,7 +145,8 @@ __constant__ unsigned char mcmult_11[256] = {
 	0xca,0xc1,0xdc,0xd7,0xe6,0xed,0xf0,0xfb,0x92,0x99,0x84,0x8f,0xbe,0xb5,0xa8,0xa3
 };
 
-__constant__ unsigned char mcmult_13[256] = {
+__constant__ 
+unsigned char mcmult_13[256] = {
 	0x00,0x0d,0x1a,0x17,0x34,0x39,0x2e,0x23,0x68,0x65,0x72,0x7f,0x5c,0x51,0x46,0x4b,
 	0xd0,0xdd,0xca,0xc7,0xe4,0xe9,0xfe,0xf3,0xb8,0xb5,0xa2,0xaf,0x8c,0x81,0x96,0x9b,
 	0xbb,0xb6,0xa1,0xac,0x8f,0x82,0x95,0x98,0xd3,0xde,0xc9,0xc4,0xe7,0xea,0xfd,0xf0,
@@ -159,7 +165,8 @@ __constant__ unsigned char mcmult_13[256] = {
 	0xdc,0xd1,0xc6,0xcb,0xe8,0xe5,0xf2,0xff,0xb4,0xb9,0xae,0xa3,0x80,0x8d,0x9a,0x97
 };
 
-__constant__ unsigned char mcmult_14[256] = {
+__constant__ 
+unsigned char mcmult_14[256] = {
 	0x00,0x0e,0x1c,0x12,0x38,0x36,0x24,0x2a,0x70,0x7e,0x6c,0x62,0x48,0x46,0x54,0x5a,
 	0xe0,0xee,0xfc,0xf2,0xd8,0xd6,0xc4,0xca,0x90,0x9e,0x8c,0x82,0xa8,0xa6,0xb4,0xba,
 	0xdb,0xd5,0xc7,0xc9,0xe3,0xed,0xff,0xf1,0xab,0xa5,0xb7,0xb9,0x93,0x9d,0x8f,0x81,
@@ -178,12 +185,12 @@ __constant__ unsigned char mcmult_14[256] = {
 	0xd7,0xd9,0xcb,0xc5,0xef,0xe1,0xf3,0xfd,0xa7,0xa9,0xbb,0xb5,0x9f,0x91,0x83,0x8d
 };
 
-void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
+void keySchedule(aesword_t aeskey[4], aesword_t expandedkey[11][4]) {
 	
 	
 	// First 128 bits is the encryption key
-	for (int c = 0; c < 16; c++) {
-		expandedkey[0][c] = aeskey[c];
+	for (int c = 0; c < 4; c++) {
+		expandedkey[0][c].w = aeskey[c].w;
 	}
 	
 	// Rest of the expanded key:
@@ -191,123 +198,166 @@ void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]) {
 	
 		// Key schedule core:
 		// Input, rotated 8 bits left:
-		unsigned char t[4] = {expandedkey[i-1][13], expandedkey[i-1][14], expandedkey[i-1][15], expandedkey[i-1][12] }; 
+		aesword_t t;
+		t.b[0] = expandedkey[i-1][3].b[1];
+		t.b[1] = expandedkey[i-1][3].b[2];
+		t.b[2] = expandedkey[i-1][3].b[3];
+		t.b[3] = expandedkey[i-1][3].b[0];
 		
 		// S-box and xor on all bytes, xor with rcon on first
-		t[0] = expandedkey[i-1][0] ^ s_host[t[0]] ^ rcon_host[i]; 
-		t[1] = expandedkey[i-1][1] ^ s_host[t[1]]; 
-		t[2] = expandedkey[i-1][2] ^ s_host[t[2]];
-		t[3] = expandedkey[i-1][3] ^ s_host[t[3]];
+		t.b[0] = expandedkey[i-1][0].b[0] ^ s_host[t.b[0]] ^ rcon_host[i]; 
+		t.b[1] = expandedkey[i-1][0].b[1] ^ s_host[t.b[1]]; 
+		t.b[2] = expandedkey[i-1][0].b[2] ^ s_host[t.b[2]];
+		t.b[3] = expandedkey[i-1][0].b[3] ^ s_host[t.b[3]];
 		
 		// Writeback
-		expandedkey[i][0] = t[0];
-		expandedkey[i][1] = t[1];
-		expandedkey[i][2] = t[2];
-		expandedkey[i][3] = t[3];
+		expandedkey[i][0].w = t.w;
 		
 		// Do last 12 bytes in the expanded key
-		for (int c = 4; c < 16; c++) {
-			expandedkey[i][c] = expandedkey[i-1][c] ^ expandedkey[i][c-4]; 
+		for (int c = 1; c < 4; c++) {
+			expandedkey[i][c].w = expandedkey[i-1][c].w ^ expandedkey[i][c-1].w; 
 		}
 	}
 }
 
 
 __device__
-void addRoundKey(unsigned char block[16], unsigned char key[11][16], int round) {	
-
-	for (int i = 0; i < 16; i++) {
-		block[i] ^= key[round][i];
+void addRoundKey(aesword_t block[4], aesword_t key[11][4], int round) {	
+	for (int i = 0; i < 4; i++) {
+		block[i].w ^= key[round][i].w;
 	}
+	
+	// for (int i = 0; i < 16; i++) {
+		// block[i] ^= key[round][i];
+	// }
 	
 }
 
 __device__
-void subBytes(unsigned char block[16]) {
-	for (int f = 0; f < 16; f++) {
-		block[f] = s[block[f]];
+void subBytes(aesword_t block[4]) {
+	for (int c = 0; c < 4; c++) {
+		for (int f = 0; f < 4; f++) {
+			block[c].b[f] = s[block[c].b[f]];
+		}
 	}
 }
 
 __device__
-void invSubBytes(unsigned char block[16]) {
-	for (int f = 0; f < 16; f++) {
-		block[f] = inv_s[block[f]];
+void invSubBytes(aesword_t block[4]) {
+	for (int c = 0; c < 4; c++) {
+		for (int f = 0; f < 4; f++) {
+			block[c].b[f] = inv_s[block[c].b[f]];
+		}
 	}
 }
 
 __device__
-void shiftRows(unsigned char block[16]) {
-	unsigned char t[16] = {	block[0], block[5], block[10], block[15],
-		block[4], block[9], block[14], block[3],
-		block[8], block[13], block[2], block[7],
-		block[12], block[1], block[6], block[11] };
+void shiftRows(aesword_t block[4]) {
+	aesword_t t[4];
+	t[0].b[0] = block[0].b[0];
+	t[0].b[1] = block[1].b[1];
+	t[0].b[2] = block[2].b[2];
+	t[0].b[3] = block[3].b[3];
 	
-	for (int i = 0; i < 16; i++) {
-		block[i] = t[i];
+	t[1].b[0] = block[1].b[0];
+	t[1].b[1] = block[2].b[1];
+	t[1].b[2] = block[3].b[2];
+	t[1].b[3] = block[0].b[3];
+	
+	t[2].b[0] = block[2].b[0];
+	t[2].b[1] = block[3].b[1];
+	t[2].b[2] = block[0].b[2];
+	t[2].b[3] = block[1].b[3];
+	
+	t[3].b[0] = block[3].b[0];
+	t[3].b[1] = block[0].b[1];
+	t[3].b[2] = block[1].b[2];
+	t[3].b[3] = block[2].b[3];
+	
+	
+	for (int i = 0; i < 4; i++) {
+		block[i].w = t[i].w;
 	}
 }
 
 __device__
-void invShiftRows(unsigned char block[16]) {
-	unsigned char t[16] = {	block[0], block[13], block[10], block[7],
-		block[4], block[1], block[14], block[11],
-		block[8], block[5], block[2], block[15],
-		block[12], block[9], block[6], block[3] };
+void invShiftRows(aesword_t block[4]) {
+	aesword_t t[4];
+	t[0].b[0] = block[0].b[0];
+	t[0].b[1] = block[3].b[1];
+	t[0].b[2] = block[2].b[2];
+	t[0].b[3] = block[1].b[3];
 	
-	for (int i = 0; i < 16; i++) {
-		block[i] = t[i];
+	t[1].b[0] = block[1].b[0];
+	t[1].b[1] = block[0].b[1];
+	t[1].b[2] = block[3].b[2];
+	t[1].b[3] = block[2].b[3];
+	
+	t[2].b[0] = block[2].b[0];
+	t[2].b[1] = block[1].b[1];
+	t[2].b[2] = block[0].b[2];
+	t[2].b[3] = block[3].b[3];
+	
+	t[3].b[0] = block[3].b[0];
+	t[3].b[1] = block[2].b[1];
+	t[3].b[2] = block[1].b[2];
+	t[3].b[3] = block[0].b[3];
+	
+	for (int i = 0; i < 4; i++) {
+		block[i].w = t[i].w;
 	}
 }
 
 __device__
-void mixColumns(unsigned char block[16]) {
+void mixColumns(aesword_t block[4]) { 
 	
-	for (int uc = 0; uc < 16; uc = uc + 4) {
-		unsigned char r[4] = {block[uc], block[uc+1], block[uc+2], block[uc+3]}; 
+	for (int uc = 0; uc < 4; uc++) {
+		aesword_t r;
+		r.w = block[uc].w;
 		
 		// Code adapted from wikipedia: http://en.wikipedia.org/wiki/Rijndael_mix_columns
-		unsigned char a[4];
-		unsigned char b[4];
+		aesword_t a;
+		aesword_t b;
 		unsigned char h;
 		for(int c = 0; c < 4;c++) {
-				a[c] = r[c];
-				h = (unsigned char)((signed char)r[c] >> 7); //??? r[c] > 0xF : 1 ? 0
-				b[c] = r[c] << 1; 
-				b[c] ^= 0x1B & h;
+				a.b[c] = r.b[c];
+				h = (unsigned char)((signed char)r.b[c] >> 7); //??? r[c] > 0xF : 1 ? 0
+				b.b[c] = r.b[c] << 1; 
+				b.b[c] ^= 0x1B & h;
 		}
-		block[uc] = b[0] ^ a[3] ^ a[2] ^ b[1] ^ a[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
-		block[uc+1] = b[1] ^ a[0] ^ a[3] ^ b[2] ^ a[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
-		block[uc+2] = b[2] ^ a[1] ^ a[0] ^ b[3] ^ a[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
-		block[uc+3] = b[3] ^ a[2] ^ a[1] ^ b[0] ^ a[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
+		block[uc].b[0] = b.b[0] ^ a.b[3] ^ a.b[2] ^ b.b[1] ^ a.b[1]; /* 2 * a0 + a3 + a2 + 3 * a1 */
+		block[uc].b[1] = b.b[1] ^ a.b[0] ^ a.b[3] ^ b.b[2] ^ a.b[2]; /* 2 * a1 + a0 + a3 + 3 * a2 */
+		block[uc].b[2] = b.b[2] ^ a.b[1] ^ a.b[0] ^ b.b[3] ^ a.b[3]; /* 2 * a2 + a1 + a0 + 3 * a3 */
+		block[uc].b[3] = b.b[3] ^ a.b[2] ^ a.b[1] ^ b.b[0] ^ a.b[0]; /* 2 * a3 + a2 + a1 + 3 * a0 */
 		
 	}
 }
 
 __device__
-void invMixColumns(unsigned char block[16]) {
-	for (int uc = 0; uc < 16; uc = uc + 4) {
-		unsigned char r[4] = {block[uc], block[uc+1], block[uc+2], block[uc+3]};
+void invMixColumns(aesword_t block[4]) {
+	for (int uc = 0; uc < 4; uc++) {
+		aesword_t r;
+		r.w = block[uc].w;
 		
-		block[uc] = mcmult_14[r[0]] ^ mcmult_11[r[1]] ^ mcmult_13[r[2]] ^ mcmult_9[r[3]];
-		block[uc+1] = mcmult_9[r[0]] ^ mcmult_14[r[1]] ^ mcmult_11[r[2]] ^ mcmult_13[r[3]];
-		block[uc+2] = mcmult_13[r[0]] ^ mcmult_9[r[1]] ^ mcmult_14[r[2]] ^ mcmult_11[r[3]];
-		block[uc+3] = mcmult_11[r[0]] ^ mcmult_13[r[1]] ^ mcmult_9[r[2]] ^ mcmult_14[r[3]];
-	}
+		block[uc].b[0] = mcmult_14[r.b[0]] ^ mcmult_11[r.b[1]] ^ mcmult_13[r.b[2]] ^ mcmult_9[r.b[3]];
+		block[uc].b[1] = mcmult_9[r.b[0]] ^ mcmult_14[r.b[1]] ^ mcmult_11[r.b[2]] ^ mcmult_13[r.b[3]];
+		block[uc].b[2] = mcmult_13[r.b[0]] ^ mcmult_9[r.b[1]] ^ mcmult_14[r.b[2]] ^ mcmult_11[r.b[3]];
+		block[uc].b[3] = mcmult_11[r.b[0]] ^ mcmult_13[r.b[1]] ^ mcmult_9[r.b[2]] ^ mcmult_14[r.b[3]];
+	} 
 }
 
 __global__
-void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
-	int dataptr = (blockIdx.x * blockDim.x + threadIdx.x)*16;
+void aes128_core(aesword_t expandedkey[11][4], aesword_t *data) {
+	int dataptr = (blockIdx.x * blockDim.x + threadIdx.x)*4;
 	
-	unsigned char localdata[16];
-	for (int i = 0; i < 16; i++) {
-		localdata[i] = data[dataptr+i];
+	aesword_t localdata[4];
+	for (int i = 0; i < 4; i++) {
+		localdata[i].w = data[dataptr+i].w;
 	}
 	
 	// 2. Initial round key
 	addRoundKey(localdata, expandedkey, 0);
-	
+
 	
 	// 3. 9 rounds of encryption
 	for (int i = 1; i < 10; i++) {
@@ -322,27 +372,18 @@ void aes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
 	shiftRows(localdata);
 	addRoundKey(localdata, expandedkey, 10);
 	
-	for (int i = 0; i < 16; i++) {
-		data[dataptr+i] = localdata[i];
+	for (int i = 0; i < 4; i++) {
+		data[dataptr+i].w = localdata[i].w;
 	}
 }
 
-void aes128(unsigned char key[16], unsigned char *data[16]) {
-	
-	// 1. Key expansion
-	//unsigned char expkey[11][16];
-	//keySchedule(key, expkey);
-	
-	//aes128_core(expkey, data[threadIdx.x]);
-}
-
 __global__
-void invaes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
-	int dataptr = blockIdx.x * blockDim.x + threadIdx.x;
+void invaes128_core(aesword_t expandedkey[11][4], aesword_t *data) {
+	int dataptr = (blockIdx.x * blockDim.x + threadIdx.x)*4;
 	
-	unsigned char localdata[16];
-	for (int i = 0; i < 16; i++) {
-		localdata[i] = data[dataptr+i];
+	aesword_t localdata[4];
+	for (int i = 0; i < 4; i++) {
+		localdata[i].w = data[dataptr+i].w;
 	}
 	
 	// 2. Initial round key
@@ -359,18 +400,14 @@ void invaes128_core(unsigned char expandedkey[11][16], unsigned char *data) {
 	// 4. Final round
 	invShiftRows(localdata);
 	invSubBytes(localdata);
-	
 	addRoundKey(localdata, expandedkey, 0);
-}
-
-void invaes128(unsigned char key[16], unsigned char data[16]) {
-		// 1. Key expansion
-	//unsigned char expkey[11][16];
-	//keySchedule(key, expkey);
 	
-	//invaes128_core(expkey, data);
-
+		
+	for (int i = 0; i < 4; i++) {
+		data[dataptr+i].w = localdata[i].w;
+	}
 }
+
 
 
 

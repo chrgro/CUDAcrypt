@@ -2,42 +2,44 @@
 #define SRC_AES_H
 
 // Header file
-
 // AES core components
 
+#include "stdint.h"
 
-void keySchedule(unsigned char aeskey[16], unsigned char expandedkey[11][16]);
+typedef union {
+	unsigned char b[4];
+	uint32_t w;
+} aesword_t;
 
-__device__
-void addRoundKey(unsigned char block[16], unsigned char key[11][16], int round);
-
-__device__
-void subBytes(unsigned char block[16]);
-
-__device__
-void invSubBytes(unsigned char block[16]);
+void keySchedule(aesword_t aeskey[4], aesword_t expandedkey[11][4]);
 
 __device__
-void shiftRows(unsigned char block[16]);
+void addRoundKey(aesword_t block[4], aesword_t key[11][4], int round);
 
 __device__
-void invShiftRows(unsigned char block[16]);
+void subBytes(aesword_t block[4]);
 
 __device__
-void mixColumns(unsigned char block[16]);
+void invSubBytes(aesword_t block[4]);
 
 __device__
-void invMixColumns(unsigned char block[16]);
+void shiftRows(aesword_t block[4]); 
+
+__device__
+void invShiftRows(aesword_t block[4]);
+
+__device__
+void mixColumns(aesword_t block[4]);
+
+__device__
+void invMixColumns(aesword_t block[4]);
+
+__global__ 
+void aes128_core(aesword_t expandedkey[11][4], aesword_t *data);
 
 __global__
-void aes128_core(unsigned char expandedkey[11][16], unsigned char *data);
+void invaes128_core(aesword_t expandedkey[11][4], aesword_t *data);
 
-void aes128(unsigned char key[16], unsigned char data[16]);
-
-__global__
-void invaes128_core(unsigned char expandedkey[11][16], unsigned char *data);
-
-void invaes128(unsigned char key[16], unsigned char data[16]);
 
 
 #endif
