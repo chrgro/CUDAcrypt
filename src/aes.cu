@@ -408,25 +408,28 @@ void invaes128_core(aesword_t expandedkey[11][4], aesword_t *data) {
  * aes with 128 bit key in CTRC mode. IV is treated as an int of size 128, 
  * but given to us as an unsigned char array of size 16
  */
-
   __global__
-void aes128_ctrc(unsigned char expandedkey[11][16], unsigned char *data,
-    unsigned char IV[16])
+void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data,
+    aesword_t IV[4])
 {
   //thread number #
   long tid = blockIdx.x * blockDim.x + threadIdx.x;
-  unsigned char ctr[16]; //this is IV + tid
+  aesword_t ctr[4]; //this is IV + tid
+  //convert these to unsigned char for easier accessing
+  unsigned char* iv = (unsigned char*) IV;
+  unsigned char* c = (unsigned char*) ctr;
 
   //this part does ctrc = IV + tid;
-
+  long j = tid;
   for(int i = 0; i < 16; i++)
   {
-    //since IV is at most 256, it will wrap around for each 256 
-    int j = tid%256;
+    //we shouldn't need to worry about overflow because iv is longer than long
     //add most significant part first
-    ctr[i] = IV[i] + j%(16 * (16 - i - 1));
+    c[i] = iv[i]; + j%(long)exp2f(127-(8*i) );
+    //2^(127-8i) since each char is 8bits 
+
     //remove that part you just added from tid
-    j = j/16;
+    j = j/(long)exp2f(8);
   }
 
   //now ctrc is set, and we need to encrypt it, start AES rounds
@@ -450,11 +453,7 @@ void aes128_ctrc(unsigned char expandedkey[11][16], unsigned char *data,
   addRoundKey(ctr, expandedkey, round);
 
   //XOR with ciphertext and copy back to data
-  int dataptr = tid*16;
-  for(int i = 0; i < 16; i++)
-  {
-    data[dataptr + i] = ctr[i] ^ data[dataptr + i];
-  }
+  //NOT DONE!!
 }
 
 
