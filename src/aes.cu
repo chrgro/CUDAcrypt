@@ -422,7 +422,7 @@ void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data,
   {
     //we shouldn't need to worry about overflow because iv is longer than long
     //add most significant part first
-    c_ctr[i] = iv[i]; + j%(long)exp2f(127-(8*i) );
+    c_ctr[i] = iv[i] + j%(long)exp2f(127-(8*i) );
     //2^(127-8i) since each char is 8bits 
 
     //remove that part you just added from tid
@@ -452,7 +452,7 @@ void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data,
   //XOR with ciphertext and copy back to data
   int dataptr = tid*4; //4 because we have 4 aesword_t's per thread
   //128 because we are doing 128 size blocks
-  for(int i = 0; i < 128/sizeof(aesword_t); i++)
+  for(int i = 0; i < 4; i++)
   {
     //XOR the data with ctr
     data[dataptr + i].w = data[dataptr + i].w ^ ctr[i].w;

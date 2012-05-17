@@ -94,10 +94,13 @@ int main(int argc, char *argv[]) {
 	timerStart();
 	aesword_t *cdata;
 	aesword_t *cexpkey;
+	aesword_t *civ;
 	cudaMalloc ( &cdata, numbytes*sizeof(unsigned char));
 	cudaMalloc ( &cexpkey, 11*16*sizeof(unsigned char));
+	cudaMalloc ( &civ, 16*sizeof(unsigned char));
 	cudaMemcpy ( cdata, data, numbytes*sizeof(unsigned char), cudaMemcpyHostToDevice );
 	cudaMemcpy ( cexpkey, expkey, 11*16*sizeof(unsigned char), cudaMemcpyHostToDevice );
+	cudaMemcpy ( civ, iv, 16*sizeof(unsigned char), cudaMemcpyHostToDevice );
 	
 	time = timerStop();
 	printf ("Host-to-device data transfer: %fms\n", time);
@@ -107,12 +110,12 @@ int main(int argc, char *argv[]) {
 	dim3 dimBlock ( THREADS_PER_BLOCK );
 	timerStart();
 	if (dimGrid.x != 0) {
-		aes128_ctrc<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata,iv);
+		aes128_ctrc<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata, civ);
 	}
 	
 	dim3 dimBlock_remaining ( numblocks % THREADS_PER_BLOCK );
 	if (dimBlock_remaining.x != 0) {
-		aes128_ctrc<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4), iv);
+		aes128_ctrc<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4), civ);
 	} 
 	
 	time = timerStop();
