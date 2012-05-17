@@ -5,6 +5,7 @@
 __device__ unsigned char cexpkey[11][16];
 
 
+// Warning warning! This has to be 256 now.
 const int THREADS_PER_BLOCK = 256;
 
 
@@ -104,12 +105,12 @@ int main(int argc, char *argv[]) {
 	dim3 dimBlock ( THREADS_PER_BLOCK );
 	timerStart();
 	if (dimGrid.x != 0) {
-		invaes128_core<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata);
+		aes128_core<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata);
 	}
 	
 	dim3 dimBlock_remaining ( numblocks % THREADS_PER_BLOCK );
 	if (dimBlock_remaining.x != 0) {
-		invaes128_core<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4));
+		aes128_core<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4));
 	} 
 	
 	time = timerStop();
