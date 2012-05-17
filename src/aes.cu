@@ -22,6 +22,7 @@
    0x70, 0x3E, 0xB5, 0x66, 0x48, 0x03, 0xF6, 0x0E, 0x61, 0x35, 0x57, 0xB9, 0x86, 0xC1, 0x1D, 0x9E,\
    0xE1, 0xF8, 0x98, 0x11, 0x69, 0xD9, 0x8E, 0x94, 0x9B, 0x1E, 0x87, 0xE9, 0xCE, 0x55, 0x28, 0xDF,\
    0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16\
+};
 
 __constant__ 
 unsigned char sbox[256] = SBOX_VALUES_MACRO
@@ -333,11 +334,6 @@ void aes128_core(aesword_t expandedkey[11][4], aesword_t *data) {
 	int dataptr = (blockIdx.x * blockDim.x + threadIdx.x)*4;
 	
 	__shared__ unsigned char sbox_shared[256];
-	// if (threadIdx.x == 0) {
-		// for (int i = 0; i < 256; i++) {
-			// sbox_shared[i] = sbox[i];
-		// }
-	// }
 	sbox_shared[threadIdx.x] = sbox[threadIdx.x];
 	__syncthreads();
 	
@@ -415,6 +411,10 @@ void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data,
   unsigned char* iv = (unsigned char*) IV;
   //c_ctr is ctr in char form
   unsigned char* c_ctr = (unsigned char*) ctr;
+  
+  __shared__ unsigned char sbox_shared[256];
+  sbox_shared[threadIdx.x] = sbox[threadIdx.x];
+  __syncthreads();
 
   //this part does ctr = IV + tid;
   long j = tid;
@@ -438,14 +438,14 @@ void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data,
   //2. repeat round 9 times
   for(round = 1; round < 10; round++)
   {
-    subBytes(ctr);
+    subBytes(ctr, sbox_shared);
     shiftRows(ctr);
     mixColumns(ctr);
     addRoundKey(ctr, expandedkey, round);
   }
 
   //3. last round, no mixColumns for this one
-  subBytes(ctr);
+  subBytes(ctr, sbox_shared);
   shiftRows(ctr);
   addRoundKey(ctr, expandedkey, round);
 

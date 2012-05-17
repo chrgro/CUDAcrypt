@@ -85,6 +85,8 @@ int main(int argc, char *argv[]) {
 	aesword_t expkey[11][4];
 	aesword_t aeskey[4] = {0x2b ,0x7e ,0x15 ,0x16 ,0x28 ,0xae ,0xd2 ,0xa6 ,
 						  0xab ,0xf7 ,0x15 ,0x88 ,0x09 ,0xcf ,0x4f ,0x3c};
+	aesword_t iv[4] = {0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,
+						  0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00 ,0x00};
 
 	keySchedule(aeskey, expkey);
 
@@ -105,12 +107,12 @@ int main(int argc, char *argv[]) {
 	dim3 dimBlock ( THREADS_PER_BLOCK );
 	timerStart();
 	if (dimGrid.x != 0) {
-		aes128_core<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata);
+		aes128_ctrc<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata,iv);
 	}
 	
 	dim3 dimBlock_remaining ( numblocks % THREADS_PER_BLOCK );
 	if (dimBlock_remaining.x != 0) {
-		aes128_core<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4));
+		aes128_ctrc<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4), iv);
 	} 
 	
 	time = timerStop();
