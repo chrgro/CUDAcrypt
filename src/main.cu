@@ -110,12 +110,12 @@ int main(int argc, char *argv[]) {
 	dim3 dimBlock ( THREADS_PER_BLOCK );
 	timerStart();
 	if (dimGrid.x != 0) {
-		aes128_ctrc<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata, civ);
+		aes128_ecb<<<dimGrid, dimBlock>>>((aesword_t(*)[4])cexpkey, cdata);
 	}
 	
 	dim3 dimBlock_remaining ( numblocks % THREADS_PER_BLOCK );
 	if (dimBlock_remaining.x != 0) {
-		aes128_ctrc<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4), civ);
+		aes128_ecb<<<1, dimBlock_remaining>>>((aesword_t(*)[4])cexpkey, cdata+(dimGrid.x * THREADS_PER_BLOCK*4));
 	} 
 	
 	time = timerStop();

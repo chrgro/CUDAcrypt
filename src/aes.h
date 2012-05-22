@@ -35,10 +35,10 @@ __device__
 void invMixColumns(aesword_t block[4]);
 
 __global__ 
-void aes128_core(aesword_t expandedkey[11][4], aesword_t *data);
+void aes128_ecb(aesword_t expandedkey[11][4], aesword_t *data);
 
 __global__
-void invaes128_core(aesword_t expandedkey[11][4], aesword_t *data);
+void invaes128_ecb(aesword_t expandedkey[11][4], aesword_t *data);
 
 __global__
 void aes128_ctrc(aesword_t expandedkey[11][4], aesword_t *data, 
